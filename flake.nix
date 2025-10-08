@@ -9,19 +9,16 @@
   outputs = { self, nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-      nodeEnv = pkgs.buildInputs // [
-        pkgs.nodejs
-        pkgs.yarn
-      ];
+
       nextjsApp = pkgs.stdenv.mkDerivation {
         name = "nextjs-app";
         src = ./.;
-        buildInputs = nodeEnv;
-        phases = [ "installPhase" "buildPhase" "installCheckPhase" ];
+
+        nativeBuildInputs = [ pkgs.nodejs pkgs.yarn ];
 
         installPhase = ''
           mkdir -p $out
-          cp -r ./* $out/
+          cp -r . $out
           cd $out
           yarn install
         '';
@@ -29,14 +26,9 @@
         buildPhase = ''
           yarn build
         '';
-
-        installCheckPhase = ''
-          # Optionally, you can add a check to test the build
-          echo "Build completed."
-        '';
       };
-    in
-      {
-        packages.${system}.nextjsApp = nextjsApp;
-      });
+    in {
+      packages.${system}.nextjsApp = nextjsApp;
+      packages.${system}.default = nextjsApp;
+    });
 }
