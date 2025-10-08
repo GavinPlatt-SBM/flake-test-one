@@ -10,25 +10,26 @@
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
 
-      nextjsApp = pkgs.stdenv.mkDerivation {
-        pname = "nextjs-app";
-        version = "0.1.0";
-        src = ./.;
+  nextjsApp = pkgs.stdenv.mkDerivation {
+    pname = "nextjs-app";
+    version = "0.1.0";
+    src = ./.;
+    buildInputs = [ pkgs.nodejs ];
 
-        nativeBuildInputs = [ pkgs.nodejs pkgs.yarn ];
+    phases = [ "installPhase" "buildPhase" ];
 
-        buildPhase = ''
-          export HOME=$(mktemp -d)
-          yarn config set strict-ssl false
-          yarn install
-          yarn build
-        '';
+    installPhase = ''
+      mkdir -p $out
+      cp -r ./* $out/
+      cd $out
+      npm install --production --legacy-peer-deps
+    '';
 
-        installPhase = ''
-          mkdir -p $out
-          cp -r . $out/
-        '';
-      };
+    buildPhase = ''
+      npm run build
+    '';
+  };
+
     in {
       packages.nextjsApp = nextjsApp;
       packages.default = nextjsApp;
