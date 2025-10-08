@@ -28,7 +28,9 @@
         '';
       };
     in {
-      packages.${system}.nextjsApp = nextjsApp;
-      packages.${system}.default = nextjsApp;
+      packages.${system} = {
+        nextjsApp = nextjsApp;
+        default = nextjsApp;
+      };
     });
 }
